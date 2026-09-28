@@ -15,13 +15,18 @@ class DataPayload(BaseModel):
     source_id: str = Field(..., description="Identificador da fonte dos dados")
     records_count: int = Field(..., gt=0, description="Quantidade de registros a processar")
     payload_data: Dict[str, Any] = Field(..., description="Conteúdo dos dados em formato JSON")
+    simulate_flaky_network: bool = Field(
+        default=False,
+        description="Se verdadeiro, simula falhas randômicas de rede para testar o mecanismo de Retry"
+    )
 
     model_config = {
         "json_schema_extra": {
             "example": {
                 "source_id": "SRC-9876",
                 "records_count": 1500,
-                "payload_data": {"category": "financial_report", "period": "2026-Q3"}
+                "payload_data": {"category": "financial_report", "period": "2026-Q3"},
+                "simulate_flaky_network": True
             }
         }
     }
