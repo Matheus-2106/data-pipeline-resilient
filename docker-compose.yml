@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # Serviço 1: Banco de Mensagens / Cache
+  redis:
+    image: redis:alpine
+    container_name: pipeline_redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - pipeline_network
+
+  # Serviço 2: API FastAPI
+  api:
+    build: .
+    container_name: pipeline_api
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - pipeline_network
+
+  # Serviço 3: Processador Assíncrono (Celery Worker)
+  worker:
+    build: .
+    container_name: pipeline_worker
+    command: celery -A app.core.celery_app worker --loglevel=info
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - pipeline_network
+
+networks:
+  pipeline_network:
+    driver: bridge
