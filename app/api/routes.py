@@ -29,7 +29,7 @@ async def get_processing_status(task_id: str):
     """
     task_result = AsyncResult(task_id, app=celery_app)
 
-    # Mapeamento do status nativo do Celery para o nosso Enum do Pydantic
+    # Mapeamento do status nativo do Celery para o Enum do Pydantic
     celery_state = task_result.state
     if celery_state == "PENDING":
         job_status = TaskStatus.PENDING
